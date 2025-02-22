@@ -9,7 +9,7 @@ const Plate = ({ event }) => {
   return (
     <div className="h-full overflow-hidden bg-red-700 sm:flex-grow">
       <SidebarBtn event={event} />
-      <div className="h-full w-full overflow-y-scroll bg-red-400">
+      <div className="bg-main-gradient h-full w-full overflow-y-scroll">
         <Router>
           <Routes>
             <Route path="/" element={<TopicFeed />} />

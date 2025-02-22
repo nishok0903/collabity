@@ -1,7 +1,7 @@
 import React from "react";
 import TopicCard from "./TopicCard";
 
-let topicList = [
+let topics = [
   {
     id: 1,
     title: "Software Engineer",
@@ -43,8 +43,8 @@ let topicList = [
 const TopicFeed = () => {
   return (
     <div className="flex h-fit w-full flex-col items-center">
-      {topicList.map((topic) => {
-        return <TopicCard t={topic} key={topic.id} />;
+      {topics.map((topic) => {
+        return <TopicCard topic={topic} key={topic.id} />;
       })}
     </div>
   );
