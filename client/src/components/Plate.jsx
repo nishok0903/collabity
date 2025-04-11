@@ -1,22 +1,83 @@
 import React from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import TopicFeed from "./TopicFeed";
-import TopicInfo from "./TopicInfo";
 import SidebarBtn from "./SidebarBtn";
-import CreateTopic from "./CreateTopic";
+
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import Login from "./Login";
+import RegisteredTopicsList from "../faculty/RegisteredTopicsList";
+import ManageMembers from "../faculty/ManageMembers";
+import HomeRedirect from "./HomeDirect";
+import TopicInfo from "../student/TopicInfo";
+import SignUp from "./SignUp";
+import TopicFeed from "../student/TopicFeed";
+import CreateTopic from "../faculty/CreateTopic";
+import ProtectedRoute from "./ProtectedRoute";
+import Unauthorized from "./Unauthorized";
 
 const Plate = ({ event }) => {
   return (
-    <div className="h-full overflow-hidden bg-red-700 sm:flex-grow">
+    <div className="flex h-screen overflow-hidden bg-gray-100 sm:flex-grow">
+      {/* Sidebar Button */}
       <SidebarBtn event={event} />
-      <div className="bg-main-gradient h-full w-full overflow-y-scroll">
-        <Router>
-          <Routes>
-            <Route path="/" element={<TopicFeed />} />
-            <Route path="/topic" element={<TopicInfo />} />
-            <Route path="/create" element={<CreateTopic />} />
-          </Routes>
-        </Router>
+
+      {/* Main Content Area */}
+      <div className="h-full flex-1 overflow-y-auto bg-main-gradient p-4">
+        <Routes>
+          {/* Public Routes */}
+          <Route path="/login" element={<Login />} />
+          <Route path="/signup" element={<SignUp />} />
+
+          {/* Protected Routes */}
+          <Route
+            path="/admin"
+            element={
+              <ProtectedRoute component={TopicFeed} requiredRole="admin" />
+            }
+          />
+          <Route
+            path="/faculty-registered"
+            element={
+              <ProtectedRoute
+                component={RegisteredTopicsList}
+                requiredRole="faculty"
+              />
+            }
+          />
+          <Route
+            path="/create-topic"
+            element={
+              <ProtectedRoute component={CreateTopic} requiredRole="faculty" />
+            }
+          />
+          <Route
+            path="/manage"
+            element={
+              <ProtectedRoute
+                component={ManageMembers}
+                requiredRole="faculty"
+              />
+            }
+          />
+
+          <Route
+            path="/feed"
+            element={
+              <ProtectedRoute component={TopicFeed} requiredRole="student" />
+            }
+          />
+
+          <Route
+            path="/info/topic"
+            element={
+              <ProtectedRoute component={TopicInfo} requiredRole="student" />
+            }
+          />
+
+          {/* Unauthorized page */}
+          <Route path="/unauthorized" element={<Unauthorized />} />
+
+          {/* Default route (Redirect equivalent in v6) */}
+          <Route path="/" element={<HomeRedirect />} />
+        </Routes>
       </div>
     </div>
   );

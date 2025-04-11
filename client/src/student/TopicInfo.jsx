@@ -1,7 +1,10 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
+import RegularButton from "../components/RegularButton";
 
 const TopicInfo = () => {
+  const navigate = useNavigate();
+
   return (
     <div className="mx-auto my-4 w-4/5 rounded-lg border-4 border-black bg-white p-8 shadow-lg">
       <div className="topic-info">
@@ -79,9 +82,9 @@ const TopicInfo = () => {
           </p>
         </div>
         <div className="flex w-full justify-center">
-          <button className="w-fit rounded-lg bg-blue-600 px-6 py-3 font-semibold text-white shadow-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50">
-            <Link to="/">Apply</Link>
-          </button>
+          <RegularButton onclick={() => navigate("/feed")}>
+            Apply Now
+          </RegularButton>
         </div>
       </div>
     </div>

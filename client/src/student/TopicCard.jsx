@@ -1,7 +1,10 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import RegularButton from "../components/RegularButton";
+import { useNavigate } from "react-router-dom";
 
 const TopicCard = ({ topic }) => {
+  const navigate = useNavigate();
+
   // Ensure topic is not undefined or null
   if (!topic) {
     return <div>Loading...</div>; // Or show any fallback UI
@@ -79,11 +82,9 @@ const TopicCard = ({ topic }) => {
       </div>
 
       {/* View Topic Button: Directs to detailed topic page */}
-      <button className="w-fit transform rounded-lg bg-gradient-to-r from-blue-500 to-indigo-600 px-6 py-3 font-semibold text-white shadow-lg transition-all duration-300 ease-in-out hover:scale-105 focus:outline-none focus:ring-4 focus:ring-blue-300 focus:ring-opacity-50">
-        <Link to="/topic" className="flex items-center space-x-2">
-          <span>View Topic</span>
-        </Link>
-      </button>
+      <RegularButton onclick={() => navigate("/info/topic")}>
+        <span>View Topic</span>
+      </RegularButton>
     </div>
   );
 };
