@@ -53,7 +53,7 @@ const SignUp = () => {
       const uid = firebaseUser.uid;
 
       // Send user data (uid, email, role) to backend for registration
-      const response = await fetch("/api/register", {
+      const response = await fetch("/api/auth/register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

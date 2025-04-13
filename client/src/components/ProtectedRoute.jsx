@@ -16,6 +16,7 @@ const ProtectedRoute = ({ component: Component, requiredRole }) => {
 
     // Redirect to unauthorized page if user doesn't have the correct role
     if (currentUser.role !== requiredRole) {
+      console.log(currentUser.role);
       navigate("/unauthorized");
     }
 

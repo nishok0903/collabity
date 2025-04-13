@@ -1,7 +1,8 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import FormField from "../components/FormField";
 import DateInput from "../components/DateInput";
 import RegularButton from "../components/RegularButton";
+import { use } from "react";
 
 const CreateTopic = () => {
   // Form state initialization
@@ -24,16 +25,22 @@ const CreateTopic = () => {
   const fileInputRef = useRef(null); // File input ref
 
   // Predefined tags with unique colors
-  const predefinedTags = [
-    { id: "ai", text: "AI", color: "#3498db" },
-    { id: "ml", text: "Machine Learning", color: "#e74c3c" },
-    { id: "ds", text: "Data Science", color: "#2ecc71" },
-    { id: "bc", text: "Blockchain", color: "#f39c12" },
-    { id: "cc", text: "Cloud Computing", color: "#9b59b6" },
-    { id: "cy", text: "Cybersecurity", color: "#34495e" },
-    { id: "bd", text: "Big Data", color: "#16a085" },
-    { id: "ro", text: "Robotics", color: "#8e44ad" },
-  ];
+  let predefinedTags = [];
+
+  // Populate predefined tags with data from the backend API
+  useEffect(() => {
+    const fetchTags = async () => {
+      try {
+        const response = await fetch("/api/tags");
+        if (!response.ok) throw new Error("Failed to fetch tags.");
+        const data = await response.json();
+        predefinedTags = data.tags;
+      } catch (error) {
+        console.error(error);
+      }
+    };
+    fetchTags();
+  }, []);
 
   // Generalized form field change handler
   const handleChange = (e) => {
@@ -46,7 +53,7 @@ const CreateTopic = () => {
 
   // Handle compensation change with INR formatting
   const handleCompensationChange = (e) => {
-    const value = e.target.value.replace(/[^0-9]/g, ""); // Allow only numbers
+    const value = e.target.value;
     setFormData({ ...formData, compensation: value });
   };
 
@@ -126,11 +133,16 @@ const CreateTopic = () => {
         compensation: "",
         tags: [],
       });
+
+      // Clear errors and input fields
       setErrors({});
       setInput("");
       setSuggestions([]);
       setError("");
       fileInputRef.current.value = ""; // Reset file input after form submission
+
+      console.log("Form Data:", formData); // Log form data for debugging
+      // Logic to send formData to your backend API
     } else {
       setErrors(newErrors);
     }
@@ -244,7 +256,7 @@ const CreateTopic = () => {
         {/* Compensation */}
         <FormField
           label="Compensation (INR)"
-          type="text"
+          type="number"
           name="compensation"
           value={formatINR(formData.compensation)}
           onChange={handleCompensationChange}

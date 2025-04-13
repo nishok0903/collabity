@@ -1,5 +1,5 @@
 const express = require("express");
-const admin = require("./firebaseAdmin");
+const admin = require("./config/firebaseAdmin");
 const mysql = require("mysql2");
 const app = express();
 const dotenv = require("dotenv");

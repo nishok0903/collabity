@@ -131,4 +131,4 @@ dist
 
 
 # secrets
-server/collabity-cf66c-firebase-adminsdk-fbsvc-d4b3e9e3d0.json
+server/firebase.config.json

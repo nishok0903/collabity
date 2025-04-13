@@ -34,14 +34,15 @@ const Login = () => {
 
     setErrors({});
     try {
-      const loggedInUser = await login(email, password);
-      alert(loggedInUser.email + " logged in successfully! ✅");
+      const role = await login(email, password);
+      alert(role + " logged in successfully! ✅");
+      console.log("here: " + role);
 
       // Redirect user based on their role
-      if (loggedInUser.role === "student") {
-        navigate("/student"); // Redirect to student dashboard or component
-      } else if (loggedInUser.role === "faculty") {
-        navigate("/registered-topics"); // Redirect to faculty dashboard or component
+      if (role === "student") {
+        navigate("/feed"); // Redirect to student dashboard or component
+      } else if (role === "faculty") {
+        navigate("/create-topic"); // Redirect to faculty dashboard or component
       }
     } catch {
       alert("Failed to log in");
