@@ -1,6 +1,5 @@
 import React from "react";
 import SidebarBtn from "./SidebarBtn";
-
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Login from "./Login";
 import RegisteredTopicsList from "../faculty/RegisteredTopicsList";
@@ -16,9 +15,6 @@ import Unauthorized from "./Unauthorized";
 const Plate = ({ event }) => {
   return (
     <div className="flex h-screen overflow-hidden bg-gray-100 sm:flex-grow">
-      {/* Sidebar Button */}
-      <SidebarBtn event={event} />
-
       {/* Main Content Area */}
       <div className="h-full flex-1 overflow-y-auto bg-main-gradient p-4">
         <Routes>
@@ -57,16 +53,14 @@ const Plate = ({ event }) => {
               />
             }
           />
-
           <Route
             path="/feed"
             element={
               <ProtectedRoute component={TopicFeed} requiredRole="student" />
             }
           />
-
           <Route
-            path="/info/topic"
+            path="/info/topic/:topicId"
             element={
               <ProtectedRoute component={TopicInfo} requiredRole="student" />
             }

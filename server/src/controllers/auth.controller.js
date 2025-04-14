@@ -1,4 +1,3 @@
-const { use } = require("../app");
 const User = require("../models/user.model");
 
 exports.checkRole = async (req, res, next) => {

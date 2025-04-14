@@ -1,51 +1,55 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { auth } from "../firebase";
 import TopicCard from "./TopicCard";
 
-let topics = [
-  {
-    id: 1,
-    title: "Software Engineer",
-    description: "Develops software solutions for clients.",
-    vacancies: 5,
-    dates: "May 2022 - August 2022",
-    compensation: "$30/hr",
-    tags: ["Software", "Engineering", "Development"],
-  },
-  {
-    id: 2,
-    title: "Data Scientist",
-    description: "Analyzes data to provide insights for clients.",
-    vacancies: 3,
-    dates: "June 2022 - August 2022",
-    compensation: "$35/hr",
-    tags: ["Data", "Science", "Analysis"],
-  },
-  {
-    id: 3,
-    title: "Product Manager",
-    description: "Manages product development for clients.",
-    vacancies: 2,
-    dates: "July 2022 - August 2022",
-    compensation: "$40/hr",
-    tags: ["Product", "Management", "Development"],
-  },
-  {
-    id: 4,
-    title: "UX Designer",
-    description: "Designs user interfaces for clients.",
-    vacancies: 4,
-    dates: "August 2022 - August 2022",
-    compensation: "$25/hr",
-    tags: ["UX", "Design", "User Interface"],
-  },
-];
-
 const TopicFeed = () => {
+  const [topics, setTopics] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchTopics = async () => {
+      try {
+        const firebase_uid = auth.currentUser?.uid;
+        const firebaseToken = await auth.currentUser?.getIdToken(true); // Get the Firebase token
+        if (!firebase_uid) {
+          setError("User not authenticated");
+          return;
+        }
+        const res = await fetch(
+          `http://localhost:5000/api/student/getFeed?firebase_uid=${firebase_uid}`,
+          {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${firebaseToken}`, // Add Bearer token here
+            },
+          },
+        );
+        if (!res.ok) throw new Error("Failed to fetch topics");
+
+        const data = await res.json();
+        setTopics(data.topics);
+        console.log(data.topics);
+      } catch (err) {
+        setError(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTopics();
+  }, []);
+
+  if (loading) return <div>Loading topics...</div>;
+  if (error) return <div>Error: {error}</div>;
+
   return (
     <div className="flex h-fit w-full flex-col items-center">
-      {topics.map((topic) => {
-        return <TopicCard topic={topic} key={topic.id} />;
-      })}
+      {topics.length === 0 ? (
+        <div>No topics found</div>
+      ) : (
+        topics.map((topic) => <TopicCard topic={topic} key={topic.id} />)
+      )}
     </div>
   );
 };

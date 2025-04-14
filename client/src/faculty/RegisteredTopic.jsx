@@ -14,8 +14,8 @@ const RegisteredTopic = ({ topic }) => {
         {topic.title}
       </h3>
       <p className="mt-1 text-xs text-gray-500 sm:text-sm">
-        {new Date(topic.startDate).toLocaleDateString()} -{" "}
-        {new Date(topic.endDate).toLocaleDateString()}
+        {new Date(topic.start_date).toLocaleDateString()} -{" "}
+        {new Date(topic.end_date).toLocaleDateString()}
       </p>
 
       {/* Status & Buttons */}

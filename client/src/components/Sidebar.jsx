@@ -11,6 +11,7 @@ import {
 const Sidebar = ({ isOpen }) => {
   const { currentUser } = useAuth();
 
+  // List for student and faculty navigation
   const studentList = [
     {
       name: "Dashboard",

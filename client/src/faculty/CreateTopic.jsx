@@ -2,10 +2,11 @@ import React, { useState, useRef, useEffect } from "react";
 import FormField from "../components/FormField";
 import DateInput from "../components/DateInput";
 import RegularButton from "../components/RegularButton";
-import { use } from "react";
+import { useAuth } from "../context/AuthContext";
 
 const CreateTopic = () => {
-  // Form state initialization
+  const { currentUser } = useAuth();
+
   const [formData, setFormData] = useState({
     researchTopic: "",
     topicDescription: "",
@@ -14,141 +15,97 @@ const CreateTopic = () => {
     startDate: "",
     endDate: "",
     compensation: "",
-    tags: [],
+    tags: [], // Only tag IDs
   });
 
   const [errors, setErrors] = useState({});
   const [input, setInput] = useState("");
   const [suggestions, setSuggestions] = useState([]);
   const [error, setError] = useState("");
+  const [predefinedTags, setPredefinedTags] = useState([]);
 
-  const fileInputRef = useRef(null); // File input ref
+  const fileInputRef = useRef(null);
 
-  // Predefined tags with unique colors
-  let predefinedTags = [];
-
-  // Populate predefined tags with data from the backend API
   useEffect(() => {
     const fetchTags = async () => {
       try {
         const response = await fetch("/api/tags");
-        if (!response.ok) throw new Error("Failed to fetch tags.");
         const data = await response.json();
-        predefinedTags = data.tags;
-      } catch (error) {
-        console.error(error);
+        setPredefinedTags(data);
+      } catch (err) {
+        console.error("Failed to fetch tags:", err);
       }
     };
     fetchTags();
   }, []);
 
-  // Generalized form field change handler
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData({
-      ...formData,
-      [name]: value,
-    });
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  // Handle compensation change with INR formatting
-  const handleCompensationChange = (e) => {
-    const value = e.target.value;
-    setFormData({ ...formData, compensation: value });
-  };
-
-  // Handle file change with validation
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
       if (file.size > 4 * 1024 * 1024) {
-        setErrors({ ...errors, document: "File size should not exceed 4MB." });
-        setFormData({ ...formData, document: null });
-        fileInputRef.current.value = ""; // Reset the file input
-      } else if (file.type !== "application/pdf") {
-        setErrors({ ...errors, document: "Only PDF files are allowed." });
-        setFormData({ ...formData, document: null });
-        fileInputRef.current.value = ""; // Reset the file input
-      } else {
-        setErrors({ ...errors, document: "" });
-        setFormData({ ...formData, document: file });
+        setErrors((prev) => ({
+          ...prev,
+          document: "File size should not exceed 4MB.",
+        }));
+        fileInputRef.current.value = "";
+        return;
       }
+      if (file.type !== "application/pdf") {
+        setErrors((prev) => ({
+          ...prev,
+          document: "Only PDF files are allowed.",
+        }));
+        fileInputRef.current.value = "";
+        return;
+      }
+
+      setFormData((prev) => ({ ...prev, document: file }));
+      setErrors((prev) => ({ ...prev, document: "" }));
     }
   };
 
-  // Handle tag suggestions based on user input
   const handleInputChange = (e) => {
-    setInput(e.target.value);
-    if (e.target.value) {
-      const filteredSuggestions = predefinedTags.filter((tag) =>
-        tag.text.toLowerCase().includes(e.target.value.toLowerCase()),
-      );
-      setSuggestions(filteredSuggestions);
-    } else {
-      setSuggestions([]);
-    }
+    const inputVal = e.target.value;
+    setInput(inputVal);
+    setSuggestions(
+      predefinedTags.filter((tag) =>
+        tag.name.toLowerCase().includes(inputVal.toLowerCase()),
+      ),
+    );
   };
 
-  // Handle adding tags to the form
   const handleTagAdd = (tag) => {
-    if (
-      formData.tags.length < 5 &&
-      !formData.tags.some((t) => t.text === tag.text)
-    ) {
-      setFormData({ ...formData, tags: [...formData.tags, tag] });
-      setInput("");
-      setSuggestions([]);
-    } else {
-      setError(
-        formData.tags.length >= 5
-          ? "You can only add up to 5 tags."
-          : "Tag already added!",
-      );
+    if (formData.tags.includes(tag.id)) {
+      setError("Tag already added!");
+      return;
     }
-  };
 
-  // Handle removing tags
-  const handleTagRemove = (tagToRemove) => {
-    setFormData({
-      ...formData,
-      tags: formData.tags.filter((tag) => tag.id !== tagToRemove.id),
-    });
-  };
-
-  // Handle form submission with validation
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    const newErrors = validateFormData();
-    if (Object.keys(newErrors).length === 0) {
-      alert("Topic successfully submitted!");
-
-      // Clear form on successful submission
-      setFormData({
-        researchTopic: "",
-        topicDescription: "",
-        vacancies: "",
-        document: null,
-        startDate: "",
-        endDate: "",
-        compensation: "",
-        tags: [],
-      });
-
-      // Clear errors and input fields
-      setErrors({});
-      setInput("");
-      setSuggestions([]);
-      setError("");
-      fileInputRef.current.value = ""; // Reset file input after form submission
-
-      console.log("Form Data:", formData); // Log form data for debugging
-      // Logic to send formData to your backend API
-    } else {
-      setErrors(newErrors);
+    if (formData.tags.length >= 5) {
+      setError("You can only add up to 5 tags.");
+      return;
     }
+
+    setFormData((prev) => ({
+      ...prev,
+      tags: [...prev.tags, tag.id],
+    }));
+    setInput("");
+    setSuggestions([]);
+    setError("");
   };
 
-  // Form validation logic
+  const handleTagRemove = (idToRemove) => {
+    setFormData((prev) => ({
+      ...prev,
+      tags: prev.tags.filter((id) => id !== idToRemove),
+    }));
+  };
+
   const validateFormData = () => {
     const newErrors = {};
     if (!formData.researchTopic) newErrors.researchTopic = "Topic is required.";
@@ -163,10 +120,70 @@ const CreateTopic = () => {
     return newErrors;
   };
 
-  // Format compensation as INR
-  const formatINR = (value) => {
-    if (!value) return "";
-    return value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    const validationErrors = validateFormData();
+    if (Object.keys(validationErrors).length > 0) {
+      setErrors(validationErrors);
+      return;
+    }
+
+    try {
+      const token = currentUser.accessToken;
+      const formPayload = new FormData();
+
+      formPayload.append("researchTopic", formData.researchTopic);
+      formPayload.append("topicDescription", formData.topicDescription);
+      formPayload.append("vacancies", formData.vacancies);
+      formPayload.append("startDate", formData.startDate);
+      formPayload.append("endDate", formData.endDate);
+      formPayload.append("compensation", formData.compensation);
+      formPayload.append("tags", JSON.stringify(formData.tags));
+      formPayload.append("user", currentUser.uid);
+      if (formData.document) {
+        formPayload.append("document", formData.document);
+      }
+
+      const response = await fetch("/api/faculty", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+        body: formPayload,
+      });
+
+      if (!response.ok) {
+        const raw = await response.text();
+        try {
+          const errorData = JSON.parse(raw);
+          console.error("Error:", errorData);
+        } catch {
+          console.error("Non-JSON error:", raw);
+        }
+        return;
+      }
+
+      alert("Topic successfully submitted!");
+      // Reset form
+      setFormData({
+        researchTopic: "",
+        topicDescription: "",
+        vacancies: "",
+        document: null,
+        startDate: "",
+        endDate: "",
+        compensation: "",
+        tags: [],
+      });
+      setInput("");
+      setSuggestions([]);
+      setErrors({});
+      setError("");
+      fileInputRef.current.value = "";
+    } catch (err) {
+      console.error("Submission failed:", err);
+    }
   };
 
   return (
@@ -176,7 +193,6 @@ const CreateTopic = () => {
           Create Research Topic
         </h1>
 
-        {/* Research Topic */}
         <FormField
           label="Research Topic"
           type="text"
@@ -186,7 +202,6 @@ const CreateTopic = () => {
           error={errors.researchTopic}
         />
 
-        {/* Topic Description */}
         <FormField
           label="Topic Description"
           type="textarea"
@@ -196,7 +211,6 @@ const CreateTopic = () => {
           error={errors.topicDescription}
         />
 
-        {/* Vacancies */}
         <FormField
           label="Vacancies"
           type="number"
@@ -206,7 +220,6 @@ const CreateTopic = () => {
           error={errors.vacancies}
         />
 
-        {/* Document Upload */}
         <div className="mb-6">
           <label className="block text-lg font-medium text-gray-700">
             Upload Document (.pdf, Max 4MB)
@@ -214,17 +227,16 @@ const CreateTopic = () => {
           <input
             type="file"
             name="document"
+            accept=".pdf"
+            ref={fileInputRef}
             onChange={handleFileChange}
             className="mt-2 w-full rounded-lg border border-gray-300 p-3 focus:ring-2 focus:ring-blue-500"
-            accept=".pdf"
-            ref={fileInputRef} // Attach ref here
           />
           {errors.document && (
             <p className="text-sm text-red-500">{errors.document}</p>
           )}
         </div>
 
-        {/* Tags */}
         <TagsSection
           input={input}
           suggestions={suggestions}
@@ -232,10 +244,10 @@ const CreateTopic = () => {
           onInputChange={handleInputChange}
           onTagAdd={handleTagAdd}
           onTagRemove={handleTagRemove}
-          formData={formData}
+          tagIds={formData.tags}
+          allTags={predefinedTags}
         />
 
-        {/* Start and End Dates */}
         <div className="mb-6 flex flex-col sm:flex-row sm:space-x-6">
           <DateInput
             label="Start Date"
@@ -253,17 +265,15 @@ const CreateTopic = () => {
           />
         </div>
 
-        {/* Compensation */}
         <FormField
           label="Compensation (INR)"
           type="number"
           name="compensation"
-          value={formatINR(formData.compensation)}
-          onChange={handleCompensationChange}
+          value={formData.compensation}
+          onChange={handleChange}
           error={errors.compensation}
         />
 
-        {/* Submit Button */}
         <div className="mt-8 flex justify-center">
           <RegularButton type="submit">Publish Topic</RegularButton>
         </div>
@@ -272,7 +282,6 @@ const CreateTopic = () => {
   );
 };
 
-// Reusable Tags Section Component
 const TagsSection = ({
   input,
   suggestions,
@@ -280,12 +289,12 @@ const TagsSection = ({
   onInputChange,
   onTagAdd,
   onTagRemove,
-  formData,
+  tagIds,
+  allTags,
 }) => (
   <div className="mb-6">
     <label className="block text-lg font-medium text-gray-700">Tags</label>
     <div className="relative mt-2 flex flex-wrap gap-2">
-      {/* Input field */}
       <input
         type="text"
         value={input}
@@ -294,7 +303,6 @@ const TagsSection = ({
         placeholder="Add a tag"
       />
 
-      {/* Suggestions dropdown */}
       {suggestions.length > 0 && (
         <div className="absolute z-10 mt-12 max-h-40 w-full overflow-y-auto rounded-lg border bg-white shadow-lg">
           {suggestions.map((tag) => (
@@ -303,29 +311,31 @@ const TagsSection = ({
               onClick={() => onTagAdd(tag)}
               className="cursor-pointer p-2 hover:bg-gray-100"
             >
-              {tag.text}
+              {tag.name}
             </div>
           ))}
         </div>
       )}
 
-      {/* Selected tags */}
-      {formData.tags.map((tag) => (
-        <div
-          key={tag.id}
-          className="flex items-center gap-2 rounded-lg bg-blue-600 p-2 text-white"
-        >
-          <span>{tag.text}</span>
-          <button
-            onClick={() => onTagRemove(tag)}
-            className="cursor-pointer border-none bg-transparent text-white"
+      {tagIds.map((id) => {
+        const tag = allTags.find((t) => t.id === id);
+        return (
+          <div
+            key={id}
+            className="flex items-center gap-2 rounded-lg p-2 text-white"
+            style={{ backgroundColor: tag?.color || "#6b7280" }}
           >
-            &times;
-          </button>
-        </div>
-      ))}
+            <span>{tag?.name || "Unknown"}</span>
+            <button
+              onClick={() => onTagRemove(id)}
+              className="cursor-pointer border-none bg-transparent text-white"
+            >
+              &times;
+            </button>
+          </div>
+        );
+      })}
 
-      {/* Error message */}
       {error && <p className="text-sm text-red-500">{error}</p>}
     </div>
   </div>

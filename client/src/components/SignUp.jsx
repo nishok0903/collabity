@@ -79,11 +79,7 @@ const SignUp = () => {
   };
 
   return (
-    <div
-      className={`flex h-screen w-full items-center justify-center p-4 ${
-        role === "student" ? "bg-blue-100" : "bg-purple-100"
-      }`}
-    >
+    <div className={`flex h-screen w-full items-center justify-center p-4`}>
       <div className="relative w-full max-w-md">
         {/* Role Selection Tabs */}
         <div className="absolute inset-x-0 -top-12 flex justify-center">

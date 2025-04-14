@@ -2,6 +2,47 @@ import React from "react";
 import RegularButton from "../components/RegularButton";
 import { useNavigate } from "react-router-dom";
 
+// {
+//   "topics": [
+//     {
+//       "topic_id": 1,
+//       "title": "Software Engineer",
+//       "description": "Develops software solutions for clients.",
+//       "vacancies": 5,
+//       "total_vacancies": 5,
+//       "start_date": "2022-05-01",
+//       "end_date": "2022-08-01",
+//       "compensation": "$30/hr",
+//       "creator_id": 2,
+//       "status": "active",
+//       "created_at": "2022-04-01T10:00:00Z",
+//       "updated_at": "2022-04-05T12:00:00Z",
+//       "creator_first_name": "John",
+//       "creator_last_name": "Doe",
+//       "creator_email": "john.doe@example.com",
+//       "tags": ["Software", "Engineering", "Development"]
+//     },
+//     {
+//       "topic_id": 2,
+//       "title": "Data Scientist",
+//       "description": "Analyzes data to provide insights for clients.",
+//       "vacancies": 3,
+//       "total_vacancies": 5,
+//       "start_date": "2022-06-01",
+//       "end_date": "2022-08-01",
+//       "compensation": "$35/hr",
+//       "creator_id": 3,
+//       "status": "active",
+//       "created_at": "2022-05-01T10:00:00Z",
+//       "updated_at": "2022-05-05T12:00:00Z",
+//       "creator_first_name": "Alice",
+//       "creator_last_name": "Smith",
+//       "creator_email": "alice.smith@example.com",
+//       "tags": ["Data", "Science", "Analysis"]
+//     }
+//   ]
+// }
+
 const TopicCard = ({ topic }) => {
   const navigate = useNavigate();
 
@@ -18,7 +59,10 @@ const TopicCard = ({ topic }) => {
     },
     {
       title: "Dates",
-      element: topic.dates || "Not Available", // Default value if dates are undefined
+      element:
+        new Date(topic.start_date).toLocaleDateString() +
+          " - " +
+          new Date(topic.end_date).toLocaleDateString() || "Not Available", // Default value if dates are undefined
     },
     {
       title: "Compensation",
@@ -45,11 +89,12 @@ const TopicCard = ({ topic }) => {
             {/* <img src={src} alt={alt} className="h-full w-full object-cover" /> */}
           </div>
           <h2 className="mt-2 text-center font-bold">
-            {topic.author || "Unknown Author"}
+            {topic.creator_first_name + " " + topic.creator_last_name ||
+              "Unknown Author"}
           </h2>{" "}
           {/* Default author */}
           <h3 className="text-center">
-            {topic.authorTitle || "No Title"}
+            {topic.creator_email || "No Title"}
           </h3>{" "}
           {/* Default author title */}
         </div>
@@ -82,7 +127,7 @@ const TopicCard = ({ topic }) => {
       </div>
 
       {/* View Topic Button: Directs to detailed topic page */}
-      <RegularButton onclick={() => navigate("/info/topic")}>
+      <RegularButton onClick={() => navigate(`/info/topic/${topic.topic_id}`)}>
         <span>View Topic</span>
       </RegularButton>
     </div>
