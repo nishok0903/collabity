@@ -132,3 +132,4 @@ dist
 
 # secrets
 server/firebase.config.json
+files/secrets/

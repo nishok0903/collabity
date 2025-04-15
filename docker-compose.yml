@@ -1,0 +1,35 @@
+version: "3.8"
+services:
+  client:
+    build: ./client
+    ports:
+      - "3000:80"
+    depends_on:
+      - server
+
+  server:
+    build: ./server
+    volumes:
+      - ./server:/app
+    ports:
+      - "5000:5000"
+    environment:
+      MYSQL_HOST: localhost
+      MYSQL_USER: root
+      MYSQL_PASSWORD: tiger
+      MYSQL_DATABASE: collabity_v1
+    env_file:
+      - ./server/.env
+    depends_on:
+      - mysql
+
+  mysql:
+    image: mysql:8
+    environment:
+      MYSQL_ROOT_PASSWORD: tiger
+      MYSQL_DATABASE: collabity_v1
+    volumes:
+      - mysql-data:/var/lib/mysql
+
+volumes:
+  mysql-data:
