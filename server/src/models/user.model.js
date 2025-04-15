@@ -16,9 +16,9 @@ const User = {
     return rows[0];
   },
 
-  getUserRole: async (uid) => {
+  getByUid: async (uid) => {
     const [rows] = await db.query(
-      "SELECT role FROM users WHERE firebase_uid = ? AND is_deleted = FALSE",
+      "SELECT role, username, first_name, last_name FROM users WHERE firebase_uid = ? AND is_deleted = FALSE",
       [uid]
     );
     return rows[0];

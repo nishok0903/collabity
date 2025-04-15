@@ -34,9 +34,9 @@ const Login = () => {
 
     setErrors({});
     try {
-      const role = await login(email, password);
-      alert(role + " logged in successfully! ✅");
-      console.log("here: " + role);
+      const { username, role } = await login(email, password);
+      alert(username + " logged in successfully! ✅");
+      console.log("here: " + username);
 
       // Redirect user based on their role
       if (role === "student") {
@@ -51,7 +51,7 @@ const Login = () => {
   };
 
   return (
-    <div className="m-0 flex h-screen w-full items-center justify-center p-4">
+    <div className="m-0 flex h-screen w-full items-center justify-center bg-main-gradient p-4">
       <div className="relative w-full max-w-md">
         {/* Login Form */}
         <div className="relative z-10 rounded-lg bg-gradient-to-r from-blue-500 to-blue-700 p-8 shadow-lg">

@@ -12,3 +12,7 @@ INSERT INTO tags (name, color) VALUES
 
 select * from tags;
 
+insert into user_tags values (2, 1), (2,2), (2,3);
+
+select * from users;
+

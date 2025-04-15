@@ -4,7 +4,7 @@ const SidebarBtn = ({ event }) => {
   return (
     <div>
       <button
-        className="absolute z-50 m-1 rounded-2xl bg-slate-50 p-2"
+        className="absolute right-2 z-50 mr-1 rounded-2xl bg-slate-50 p-2"
         onClick={() => event()}
       >
         <svg

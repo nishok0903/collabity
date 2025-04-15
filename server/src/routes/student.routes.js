@@ -70,7 +70,7 @@ router.get("/getFeed", async (req, res) => {
                 u.first_name AS creator_first_name, u.last_name AS creator_last_name, u.email AS creator_email
          FROM topics t
          JOIN users u ON t.creator_id = u.id
-         WHERE t.id IN (?) AND t.is_deleted = FALSE`,
+         WHERE t.id IN (?) AND t.is_deleted = FALSE AND t.status = 'inactive'`,
       [topicIds]
     );
 
@@ -266,10 +266,6 @@ router.post("/applyForTopic", verifyToken, async (req, res) => {
     const insertLogQuery = `INSERT INTO participant_logs (topic_id, student_id, old_status, new_status, changed_by, change_reason) VALUES (?, ?, NULL, 'applied', ?, 'Applied for the topic')`;
     await db.execute(insertLogQuery, [topic_id, student_id, student_id]);
 
-    // Decrease the vacancies for the topic
-    const updateVacancyQuery = `UPDATE topics SET vacancies = vacancies - 1 WHERE id = ? AND vacancies > 0`;
-    await db.execute(updateVacancyQuery, [topic_id]);
-
     // Send success response
     res.status(200).json({ message: "Successfully applied for the topic!" });
   } catch (error) {
@@ -277,6 +273,119 @@ router.post("/applyForTopic", verifyToken, async (req, res) => {
     res
       .status(500)
       .json({ message: "An error occurred while applying for the topic." });
+  }
+});
+
+// Get topics registered by a student
+router.get("/topics", async (req, res) => {
+  try {
+    const userId = req.user.uid; // Firebase user ID from the token
+    console.log("User ID:", userId); // Log the user ID for debugging
+    const query = `
+    SELECT t.id, t.title, t.start_date, t.end_date, t.status
+    FROM topics t
+    JOIN participants p ON p.topic_id = t.id
+    WHERE p.student_id = (SELECT id FROM users WHERE firebase_uid = ?)
+      AND p.is_deleted = 0
+  `;
+    const [results] = await db.execute(query, [userId]);
+    console.log("Fetched topics:", results); // Log the fetched topics for debugging
+    // Return the topics in response
+    res.json(results);
+  } catch (err) {
+    console.error("Error fetching topics:", err);
+    return res.status(500).json({ error: "Database error" });
+  }
+});
+
+// Get student dashboard data (User, Topics, Stats) using firebase_uid
+router.get("/dashboard/:firebase_uid", async (req, res) => {
+  try {
+    const { firebase_uid } = req.params; // Get firebase_uid from the request parameters
+    const conn = await db.getConnection();
+
+    // Get student details using firebase_uid
+    const [studentUser] = await conn.execute(
+      `SELECT u.id, u.first_name, u.last_name, u.email, u.rating
+       FROM users u WHERE u.firebase_uid = ? AND u.role = 'student'`,
+      [firebase_uid]
+    );
+
+    if (studentUser.length === 0) {
+      return res.status(404).json({ message: "Student not found" });
+    }
+
+    const studentId = studentUser[0].id;
+
+    // Get the total number of topics the student is involved in
+    const [[topicsCount]] = await conn.execute(
+      `SELECT COUNT(*) AS totalTopics FROM participants p 
+       JOIN topics t ON p.topic_id = t.id
+       WHERE p.student_id = ? AND p.is_deleted = 0`,
+      [studentId]
+    );
+
+    // Get the total number of topics the student has applied for or been accepted to
+    const [[acceptedTopicsCount]] = await conn.execute(
+      `SELECT COUNT(*) AS acceptedTopics FROM participants p 
+       WHERE p.student_id = ? AND p.status IN ('accepted', 'in_progress', 'completed') AND p.is_deleted = 0`,
+      [studentId]
+    );
+
+    // Get the average rating the student has received from topics or ratings
+    const [[averageRating]] = await conn.execute(
+      `SELECT ROUND(AVG(rating), 2) AS avgRating FROM ratings_log WHERE rated_user_id = ? AND is_deleted = 0`,
+      [studentId]
+    );
+
+    // Get the status chart data showing how many topics the student is involved in for each status
+    const [statusChart] = await conn.execute(
+      `SELECT p.status, COUNT(*) AS count 
+       FROM participants p 
+       WHERE p.student_id = ? AND p.is_deleted = 0 
+       GROUP BY p.status`,
+      [studentId]
+    );
+
+    // Get the topic creation data showing how many topics have been created in each month
+    const [creationChart] = await conn.execute(
+      `SELECT DATE_FORMAT(t.created_at, '%Y-%m') AS month, COUNT(*) AS count 
+       FROM topics t
+       JOIN participants p ON t.id = p.topic_id
+       WHERE p.student_id = ? AND t.is_deleted = 0
+       GROUP BY month 
+       ORDER BY month`,
+      [studentId]
+    );
+
+    // Fetch all topics for this student for use in the frontend (for status-based distribution)
+    const [topics] = await conn.execute(
+      `SELECT t.id, t.title, p.status 
+       FROM participants p 
+       JOIN topics t ON p.topic_id = t.id
+       WHERE p.student_id = ? AND p.is_deleted = 0`,
+      [studentId]
+    );
+
+    conn.release();
+
+    // Returning the data as JSON response
+    return res.json({
+      student: studentUser[0],
+      stats: {
+        totalTopics: topicsCount.totalTopics,
+        acceptedTopics: acceptedTopicsCount.acceptedTopics,
+        avgRating: averageRating.avgRating || 0,
+      },
+      charts: {
+        topicStatus: statusChart,
+        topicCreation: creationChart,
+      },
+      topics: topics, // Returning the topics to the frontend
+    });
+  } catch (err) {
+    console.error("Dashboard error:", err);
+    res.status(500).json({ message: "Internal server error" });
   }
 });
 

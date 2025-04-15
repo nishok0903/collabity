@@ -101,7 +101,7 @@ CREATE TABLE topics (
 
     FOREIGN KEY (creator_id) REFERENCES users(id) ON DELETE CASCADE,
     CONSTRAINT chk_date CHECK (start_date <= end_date),
-    CONSTRAINT chk_vacancies CHECK (vacancies < total_vacancies),
+    CONSTRAINT chk_vacancies CHECK (vacancies <= total_vacancies),
 
     INDEX idx_topic_creator (creator_id),
     INDEX idx_topic_status (status),
@@ -198,3 +198,14 @@ CREATE TABLE ratings_log (
     INDEX idx_rating_pair (rater_id, rated_user_id),
     INDEX idx_rating_topic (topic_id)
 );
+
+
+select * from topics;
+
+select * from participants;
+
+UPDATE topics SET total_vacancies = 5 WHERE id = 6;
+
+UPDATE participants
+       SET status = 'applied', updated_at = NOW()
+       WHERE topic_id = 6 AND student_id = 2;

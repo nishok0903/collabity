@@ -9,6 +9,7 @@ import {
   AcademicCapIcon,
   BriefcaseIcon,
 } from "@heroicons/react/solid";
+import { useNavigate } from "react-router-dom";
 
 const SignUp = () => {
   const [role, setRole] = useState("student");
@@ -19,6 +20,7 @@ const SignUp = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const { signup } = useAuth();
+  const navigate = useNavigate();
 
   const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   const isValidPassword = (password) =>
@@ -48,30 +50,30 @@ const SignUp = () => {
     setErrors({});
     try {
       // Sign up user with Firebase
-      const userCredential = await signup(email, password);
-      const firebaseUser = userCredential.user;
-      const uid = firebaseUser.uid;
+      await signup(email, password, role);
 
-      // Send user data (uid, email, role) to backend for registration
-      const response = await fetch("/api/auth/register", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          firebaseUid: uid,
-          email: firebaseUser.email,
-          role: role, // Get the role selected by the user
-        }),
-      });
+      navigate(`/enterDetails/${role}`);
 
-      const data = await response.json();
-      if (response.ok) {
-        alert("Sign-up successful! ✅");
-      } else {
-        console.error("Error registering user:", data.message);
-        setErrors({ firebase: data.message });
-      }
+      // // Send user data (uid, email, role) to backend for registration
+      // const response = await fetch("/api/auth/register", {
+      //   method: "POST",
+      //   headers: {
+      //     "Content-Type": "application/json",
+      //   },
+      //   body: JSON.stringify({
+      //     firebaseUid: uid,
+      //     email: firebaseUser.email,
+      //     role: role, // Get the role selected by the user
+      //   }),
+      // });
+
+      // const data = await response.json();
+      // if (response.ok) {
+      //   alert("Sign-up successful! ✅");
+      // } else {
+      //   console.error("Error registering user:", data.message);
+      //   setErrors({ firebase: data.message });
+      // }
     } catch (error) {
       console.error("Error signing up:", error.message);
       setErrors({ firebase: error.message });
@@ -79,7 +81,9 @@ const SignUp = () => {
   };
 
   return (
-    <div className={`flex h-screen w-full items-center justify-center p-4`}>
+    <div
+      className={`flex h-screen w-full items-center justify-center bg-main-gradient p-4`}
+    >
       <div className="relative w-full max-w-md">
         {/* Role Selection Tabs */}
         <div className="absolute inset-x-0 -top-12 flex justify-center">

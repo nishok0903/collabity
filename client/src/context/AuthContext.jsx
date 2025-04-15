@@ -24,8 +24,18 @@ export function AuthProvider({ children }) {
 
   // ----------------- Auth Functions -----------------
 
-  const signup = (email, password) => {
-    return createUserWithEmailAndPassword(auth, email, password);
+  const signup = async (email, password, role) => {
+    const credentials = await createUserWithEmailAndPassword(
+      auth,
+      email,
+      password,
+    );
+    const user = credentials.user;
+    console.log("User created:", user);
+    setCurrentUser(user);
+    setCurrentUser({ ...user, role: role });
+    console.log("User role set:", role);
+    return user;
   };
 
   const login = async (email, password) => {
@@ -69,7 +79,7 @@ export function AuthProvider({ children }) {
       if (response.ok) {
         console.log("Role:", data.role);
         setCurrentUser({ ...firebaseUser, role: data.role });
-        return data.role;
+        return { username: data.username, role: data.role }; // Return username and role
       } else {
         console.error("Backend error:", data.message);
         return null;
@@ -108,7 +118,7 @@ export function AuthProvider({ children }) {
           const token = await user.getIdToken(); // 🔐 Get token again
 
           const response = await fetch(
-            "http://localhost:5000/api/auth/checkRole?firebase_uid=" + user.uid,
+            "/api/auth/checkRole?firebase_uid=" + user.uid,
             {
               method: "GET",
               headers: {
@@ -121,14 +131,18 @@ export function AuthProvider({ children }) {
           const data = await response.json();
           console.log("Role fetched:", data.role);
           if (response.ok) {
-            setCurrentUser({ ...user, role: data.role });
+            setCurrentUser({
+              ...user,
+              role: data.role,
+              username: data.username,
+              firstName: data.first_name,
+              lastName: data.last_name,
+            });
           } else {
             console.error("Error fetching role:", data.message);
-            setCurrentUser(null);
           }
         } catch (error) {
           console.error("Error fetching role:", error.message);
-          setCurrentUser(null);
         }
         setLoading(false);
       } else {

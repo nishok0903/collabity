@@ -10,13 +10,13 @@ exports.checkRole = async (req, res, next) => {
   }
 
   try {
-    const userRole = await User.getUserRole(firebase_uid);
-    console.log(userRole);
-    if (!userRole) {
+    const user = await User.getByUid(firebase_uid);
+    console.log(user);
+    if (!user) {
       return res.status(404).json({ message: "User not found." });
     }
 
-    res.json({ role: userRole.role });
+    res.json(user);
   } catch (error) {
     console.error("Error fetching role:", error);
     res.status(500).json({ message: "Internal server error." });
@@ -40,6 +40,7 @@ exports.registerUser = async (req, res) => {
       rating,
       raters,
       approved,
+      tags, // Added tags to the request body
     } = req.body;
 
     // Required fields validation
@@ -105,7 +106,15 @@ exports.registerUser = async (req, res) => {
       ", "
     )}) VALUES (${placeholders})`;
 
+    // Insert the user into the 'users' table
     const [result] = await require("../config/db").query(sql, values);
+
+    // Insert the tags for the user into the 'user_tags' table
+    if (tags && tags.length > 0) {
+      const tagValues = tags.map((tagId) => [result.insertId, tagId]); // Map tag IDs to user ID
+      const tagSql = "INSERT INTO user_tags (user_id, tag_id) VALUES ?";
+      await require("../config/db").query(tagSql, [tagValues]);
+    }
 
     res.status(201).json({
       message: "User created successfully.",
@@ -125,13 +134,13 @@ exports.loginUser = async (req, res) => {
       return res.status(400).json({ message: "firebase_uid is required." });
     }
 
-    const userRole = await User.getUserRole(firebase_uid);
+    const userRole = await User.getByUid(firebase_uid);
 
     if (!userRole) {
       return res.status(404).json({ message: "User not found." });
     }
 
-    res.json({ role: userRole.role });
+    res.json({ role: userRole.role, username: userRole.username });
   } catch (error) {
     console.error("Error logging in:", error);
     res.status(500).json({ message: "Internal server error." });
