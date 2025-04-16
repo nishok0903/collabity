@@ -43,12 +43,15 @@ const RegisteredTopic = ({ topic }) => {
   const handleStartTopic = async () => {
     try {
       const token = await auth.currentUser.getIdToken();
-      const response = await fetch(`/api/faculty/startTopic/${topic.id}`, {
-        method: "PUT",
-        headers: {
-          Authorization: `Bearer ${token}`,
+      const response = await fetch(
+        `http://localhost:3000/api/faculty/startTopic/${topic.id}`,
+        {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         },
-      });
+      );
       if (response.ok) {
         alert("Topic started successfully.");
         setButtonText("Complete Topic");
@@ -66,12 +69,15 @@ const RegisteredTopic = ({ topic }) => {
   const handleCompleteTopic = async () => {
     try {
       const token = await auth.currentUser.getIdToken();
-      const response = await fetch(`/api/faculty/completeTopic/${topic.id}`, {
-        method: "PUT",
-        headers: {
-          Authorization: `Bearer ${token}`,
+      const response = await fetch(
+        `http://localhost:3000/api/faculty/completeTopic/${topic.id}`,
+        {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         },
-      });
+      );
       if (response.ok) {
         alert("Topic completed! Please proceed with the ratings.");
         setButtonText("Completed");

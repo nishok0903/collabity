@@ -175,7 +175,7 @@ router.get("/getTopicDetails", async (req, res) => {
     connection.release();
 
     // Dynamically generate the document link (assuming the document is stored in 'uploads/documents/')
-    const documentLink = `http://localhost:5000/uploads/documents/${topic_id}.pdf`;
+    const documentLink = `/uploads/documents/${topic_id}.pdf`;
 
     // Return the topic details along with the professor details, associated tags, and the generated document link
     return res.json({

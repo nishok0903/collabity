@@ -32,7 +32,7 @@ const FacultyDashboard = () => {
       const uid = auth.currentUser.uid;
 
       const res = await fetch(
-        `http://localhost:5000/api/faculty/dashboard/${uid}`,
+        `http://localhost:3000/api/faculty/dashboard/${uid}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,

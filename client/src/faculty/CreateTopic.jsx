@@ -29,7 +29,7 @@ const CreateTopic = () => {
   useEffect(() => {
     const fetchTags = async () => {
       try {
-        const response = await fetch("/api/tags");
+        const response = await fetch(`http://localhost:3000/api/tags`);
         const data = await response.json();
         setPredefinedTags(data);
       } catch (err) {
@@ -145,7 +145,7 @@ const CreateTopic = () => {
         formPayload.append("document", formData.document);
       }
 
-      const response = await fetch("/api/faculty", {
+      const response = await fetch(`http://localhost:3000/api/faculty`, {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,

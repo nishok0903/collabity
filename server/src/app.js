@@ -14,7 +14,7 @@ const app = express();
 // Enable CORS for frontend at 5173
 app.use(
   cors({
-    origin: "http://localhost:5173",
+    origin: ["http://localhost:5173", "http://localhost:3000"],
     credentials: true, // if you're sending cookies or authorization headers
   })
 );

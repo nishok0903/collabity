@@ -31,10 +31,11 @@ export function AuthProvider({ children }) {
       password,
     );
     const user = credentials.user;
-    console.log("User created:", user);
-    setCurrentUser(user);
-    setCurrentUser({ ...user, role: role });
-    console.log("User role set:", role);
+    setCurrentUser((prev) => ({
+      ...prev,
+      ...user,
+      role: role,
+    }));
     return user;
   };
 
@@ -46,58 +47,46 @@ export function AuthProvider({ children }) {
         password,
       );
       const firebaseUser = userCredential.user;
-      setCurrentUser(firebaseUser);
+      setCurrentUser((prev) => ({
+        ...prev,
+        ...firebaseUser,
+      }));
 
-      // 🔐 Get the ID token
       const token = await firebaseUser.getIdToken();
 
-      // 🎯 Prepare the request data
-      const requestData = {
-        firebase_uid: firebaseUser.uid, // Send UID in body
-      };
-
-      const requestHeaders = {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`, // Include token
-      };
-
-      // Log the request before sending it
-      console.log("Sending login request:");
-      console.log("URL: http://localhost:5000/api/auth/login");
-      console.log("Headers:", requestHeaders);
-      console.log("Body:", JSON.stringify(requestData));
-
-      // 🎯 Send the request to the backend
-      const response = await fetch("http://localhost:5000/api/auth/login", {
+      const response = await fetch(`http://localhost:3000/api/auth/login`, {
         method: "POST",
-        headers: requestHeaders,
-        body: JSON.stringify(requestData),
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ firebase_uid: firebaseUser.uid }),
       });
 
       const data = await response.json();
 
       if (response.ok) {
-        console.log("Role:", data.role);
-        setCurrentUser({ ...firebaseUser, role: data.role });
-        return { username: data.username, role: data.role }; // Return username and role
+        setCurrentUser((prev) => ({
+          ...prev,
+          role: data.role,
+          username: data.username,
+          firstName: data.first_name,
+          lastName: data.last_name,
+        }));
+        return { username: data.username, role: data.role };
       } else {
         console.error("Backend error:", data.message);
         return null;
       }
     } catch (error) {
       console.error("Login error:", error.message);
-      alert("Error logging in. Please try again.");
       return null;
     }
   };
 
-  const logout = () => {
-    return signOut(auth);
-  };
+  const logout = () => signOut(auth);
 
-  const resetPassword = (email) => {
-    return sendPasswordResetEmail(auth, email);
-  };
+  const resetPassword = (email) => sendPasswordResetEmail(auth, email);
 
   const updateEmail = (email) => {
     if (!currentUser) throw new Error("No user logged in");
@@ -113,47 +102,47 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     const fetchUserRole = async (user) => {
-      if (user) {
-        try {
-          const token = await user.getIdToken(); // 🔐 Get token again
-
-          const response = await fetch(
-            "/api/auth/checkRole?firebase_uid=" + user.uid,
-            {
-              method: "GET",
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${token}`, // ✅ Send token here too
-              },
-            },
-          );
-
-          const data = await response.json();
-          console.log("Role fetched:", data.role);
-          if (response.ok) {
-            setCurrentUser({
-              ...user,
-              role: data.role,
-              username: data.username,
-              firstName: data.first_name,
-              lastName: data.last_name,
-            });
-          } else {
-            console.error("Error fetching role:", data.message);
-          }
-        } catch (error) {
-          console.error("Error fetching role:", error.message);
-        }
+      if (!user) {
         setLoading(false);
-      } else {
-        setLoading(false);
+        return;
       }
+
+      try {
+        const token = await user.getIdToken();
+
+        const response = await fetch(
+          `http://localhost:3000/api/auth/checkRole?firebase_uid=${user.uid}`,
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          },
+        );
+
+        const data = await response.json();
+
+        if (response.ok) {
+          setCurrentUser((prev) => ({
+            ...prev,
+            ...user,
+            role: data.role,
+            username: data.username,
+            firstName: data.first_name,
+            lastName: data.last_name,
+          }));
+        } else {
+          console.error("Error fetching role:", data.message);
+        }
+      } catch (error) {
+        console.error("Error fetching role:", error.message);
+      }
+
+      setLoading(false);
     };
 
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
-      fetchUserRole(user);
-    });
-
+    const unsubscribe = onAuthStateChanged(auth, fetchUserRole);
     return () => unsubscribe();
   }, []);
 

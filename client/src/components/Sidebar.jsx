@@ -60,7 +60,7 @@ const Sidebar = ({ isOpen }) => {
     {
       name: "Profile",
       icon: <UserCircleIcon className="h-5 w-5" />,
-      path: `/profile/${currentUser?.username}`,
+      path: `/profile/${currentUser?.username || currentUser?.email?.split("@")[0]}`,
     },
   ];
 

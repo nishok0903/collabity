@@ -35,14 +35,12 @@ const Login = () => {
     setErrors({});
     try {
       const { username, role } = await login(email, password);
-      alert(username + " logged in successfully! ✅");
-      console.log("here: " + username);
+      alert(username + " logged in successfully!");
 
-      // Redirect user based on their role
       if (role === "student") {
-        navigate("/feed"); // Redirect to student dashboard or component
+        navigate("/feed");
       } else if (role === "faculty") {
-        navigate("/create-topic"); // Redirect to faculty dashboard or component
+        navigate("/create-topic");
       }
     } catch {
       alert("Failed to log in");

@@ -53,27 +53,6 @@ const SignUp = () => {
       await signup(email, password, role);
 
       navigate(`/enterDetails/${role}`);
-
-      // // Send user data (uid, email, role) to backend for registration
-      // const response = await fetch("/api/auth/register", {
-      //   method: "POST",
-      //   headers: {
-      //     "Content-Type": "application/json",
-      //   },
-      //   body: JSON.stringify({
-      //     firebaseUid: uid,
-      //     email: firebaseUser.email,
-      //     role: role, // Get the role selected by the user
-      //   }),
-      // });
-
-      // const data = await response.json();
-      // if (response.ok) {
-      //   alert("Sign-up successful! ✅");
-      // } else {
-      //   console.error("Error registering user:", data.message);
-      //   setErrors({ firebase: data.message });
-      // }
     } catch (error) {
       console.error("Error signing up:", error.message);
       setErrors({ firebase: error.message });

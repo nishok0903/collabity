@@ -10,22 +10,25 @@ const ProfilePage = () => {
   const [errors, setErrors] = useState({});
   const currentUser = auth.currentUser;
 
-  // Fetch profile
   useEffect(() => {
     fetchProfile();
   }, []);
 
   const fetchProfile = async () => {
     try {
-      const res = await fetch(`/api/profile/${username}`);
+      const res = await fetch(`http://localhost:3000/api/profile/${username}`);
       if (!res.ok) throw new Error("Profile fetch failed");
       const data = await res.json();
       setProfile(data);
       if (currentUser?.email === data.email) {
-        setFormData(data); // Populate form with profile data
+        setFormData({
+          ...data,
+          enrollment_number: data.enrollmentNumber,
+          academic_year: data.academicYear,
+        });
       }
     } catch (err) {
-      console.error(err);
+      console.error("Error fetching profile:", err);
     }
   };
 
@@ -42,11 +45,13 @@ const ProfilePage = () => {
       )
         newErrors.googleScholarLink = "Must be a valid URL";
     } else {
-      if (!formData.enrollmentNumber?.trim())
-        newErrors.enrollmentNumber = "Required";
-      if (!formData.major?.trim()) newErrors.major = "Required";
+      if (!formData.enrollment_number?.trim())
+        newErrors.enrollment_number = "Enrollment Number is required";
+      if (!formData.major?.trim()) newErrors.major = "Major is required";
       if (formData.gpa && (formData.gpa < 0 || formData.gpa > 10))
         newErrors.gpa = "GPA must be between 0 and 10";
+      if (!formData.academic_year?.trim())
+        newErrors.academic_year = "Academic Year is required";
     }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -60,13 +65,11 @@ const ProfilePage = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     if (!validate()) return;
 
     try {
       const token = await auth.currentUser.getIdToken();
-      console.log("Form Data to be sent:", formData); // Debugging: Log the form data
-      const res = await fetch(`/api/profile/${username}`, {
+      const res = await fetch(`http://localhost:3000/api/profile/${username}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -76,9 +79,9 @@ const ProfilePage = () => {
       });
 
       if (!res.ok) throw new Error("Update failed");
-      await fetchProfile(); // Refresh profile after update
-      setIsEditing(false); // Exit edit mode after success
-      console.log("Profile updated successfully"); // Success message
+      await fetchProfile();
+      setIsEditing(false);
+      console.log("Profile updated successfully");
     } catch (err) {
       console.error("Update error:", err);
     }
@@ -101,46 +104,46 @@ const ProfilePage = () => {
                 <Field
                   label="Department"
                   name="department"
-                  value={formData.department}
+                  value={formData.department || ""}
                   onChange={handleChange}
                   error={errors.department}
                 />
                 <Field
                   label="Designation"
                   name="designation"
-                  value={formData.designation}
+                  value={formData.designation || ""}
                   onChange={handleChange}
                   error={errors.designation}
                 />
                 <TextArea
                   label="Courses Teaching"
-                  name="coursesTeaching"
-                  value={formData.courses_teaching}
+                  name="courses_teaching"
+                  value={formData.courses_teaching || ""}
                   onChange={handleChange}
                 />
                 <TextArea
                   label="Research Interests"
-                  name="researchInterests"
-                  value={formData.research_interests}
+                  name="research_interests"
+                  value={formData.research_interests || ""}
                   onChange={handleChange}
                 />
                 <Field
                   label="Office Location"
-                  name="officeLocation"
-                  value={formData.office_location}
+                  name="office_location"
+                  value={formData.office_location || ""}
                   onChange={handleChange}
                 />
                 <Field
                   label="Contact Number"
-                  name="contactNumber"
-                  value={formData.contact_number}
+                  name="contact_number"
+                  value={formData.contact_number || ""}
                   onChange={handleChange}
                 />
                 <Field
                   label="Google Scholar Link"
                   name="googleScholarLink"
                   type="url"
-                  value={formData.google_scholar_link}
+                  value={formData.googleScholarLink || ""}
                   onChange={handleChange}
                   error={errors.googleScholarLink}
                 />
@@ -149,15 +152,15 @@ const ProfilePage = () => {
               <>
                 <Field
                   label="Enrollment Number"
-                  name="enrollmentNumber"
-                  value={formData.enrollment_number}
+                  name="enrollment_number"
+                  value={formData.enrollment_number || ""}
                   onChange={handleChange}
-                  error={errors.enrollmentNumber}
+                  error={errors.enrollment_number}
                 />
                 <Field
                   label="Major"
                   name="major"
-                  value={formData.major}
+                  value={formData.major || ""}
                   onChange={handleChange}
                   error={errors.major}
                 />
@@ -166,8 +169,8 @@ const ProfilePage = () => {
                     Academic Year
                   </label>
                   <select
-                    name="academicYear"
-                    value={formData.academic_year}
+                    name="academic_year"
+                    value={formData.academic_year || ""}
                     onChange={handleChange}
                     className="rounded border px-3 py-2 focus:outline-none focus:ring focus:ring-blue-300"
                   >
@@ -178,12 +181,17 @@ const ProfilePage = () => {
                     <option value="fourth_year">Fourth Year</option>
                     <option value="graduate">Graduate</option>
                   </select>
+                  {errors.academic_year && (
+                    <span className="mt-1 text-sm text-red-500">
+                      {errors.academic_year}
+                    </span>
+                  )}
                 </div>
                 <Field
                   label="GPA"
                   name="gpa"
                   type="number"
-                  value={formData.gpa}
+                  value={formData.gpa || ""}
                   onChange={handleChange}
                   error={errors.gpa}
                 />
@@ -234,32 +242,16 @@ const ProfilePage = () => {
                     </a>
                   </p>
                 )}
-                {profile.tags.map((tag) => (
-                  <span
-                    key={tag.id}
-                    className="mb-2 mr-2 inline-block rounded bg-blue-100 px-2 py-1 text-sm font-semibold text-blue-800"
-                  >
-                    {tag.name}
-                  </span>
-                ))}
               </>
             ) : (
               <>
                 <Info
                   label="Enrollment Number"
-                  value={profile.enrollmentNumber}
+                  value={profile.enrollment_number}
                 />
                 <Info label="Major" value={profile.major} />
-                <Info label="Academic Year" value={profile.academicYear} />
+                <Info label="Academic Year" value={profile.academic_year} />
                 <Info label="GPA" value={profile.gpa} />
-                {profile.tags.map((tag) => (
-                  <span
-                    key={tag.id}
-                    className="mb-2 mr-2 inline-block rounded bg-blue-100 px-2 py-1 text-sm font-semibold text-blue-800"
-                  >
-                    {tag.name}
-                  </span>
-                ))}
               </>
             )}
             {isOwner && (
@@ -279,42 +271,39 @@ const ProfilePage = () => {
   );
 };
 
-// Field component
+// ✅ Field Component
 const Field = ({ label, name, value, onChange, type = "text", error }) => (
   <div className="flex flex-col">
     <label className="mb-1 font-medium text-gray-700">{label}</label>
     <input
       type={type}
       name={name}
-      value={value || ""}
+      value={value}
       onChange={onChange}
-      className={`rounded border px-3 py-2 ${
-        error ? "border-red-500" : "border-gray-300"
-      } focus:outline-none focus:ring focus:ring-blue-300`}
+      className="rounded border px-3 py-2 focus:outline-none focus:ring focus:ring-blue-300"
     />
     {error && <span className="mt-1 text-sm text-red-500">{error}</span>}
   </div>
 );
 
-// TextArea component
+// ✅ TextArea Component
 const TextArea = ({ label, name, value, onChange }) => (
   <div className="flex flex-col">
     <label className="mb-1 font-medium text-gray-700">{label}</label>
     <textarea
       name={name}
-      value={value || ""}
+      value={value}
       onChange={onChange}
-      rows={3}
-      className="resize-none rounded border border-gray-300 px-3 py-2 focus:outline-none focus:ring focus:ring-blue-300"
+      rows={4}
+      className="rounded border px-3 py-2 focus:outline-none focus:ring focus:ring-blue-300"
     />
   </div>
 );
 
-// Info component to display profile details
+// ✅ Info Display Component
 const Info = ({ label, value }) => (
   <p>
-    <strong>{label}:</strong>{" "}
-    {value || <span className="text-gray-400">N/A</span>}
+    <strong>{label}:</strong> {value || "Not Provided"}
   </p>
 );
 

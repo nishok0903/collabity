@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
-import { auth } from "../firebase"; // Import Firebase auth
 
 const EnterDetails = () => {
   const [formData, setFormData] = useState({
@@ -32,7 +31,7 @@ const EnterDetails = () => {
   useEffect(() => {
     const fetchTags = async () => {
       try {
-        const response = await fetch("/api/tags"); // Assuming you have an API endpoint for tags
+        const response = await fetch(`http://localhost:3000/api/tags`); // Assuming you have an API endpoint for tags
         const data = await response.json();
         setTagsList(data);
       } catch (err) {
@@ -83,23 +82,25 @@ const EnterDetails = () => {
 
     if (!validateForm()) return;
 
-    setFormData((prevState) => ({
-      ...prevState,
-      firebase_uid: currentUser.uid, // Get the current user's UID from Firebase
-      role: role, // Get the role from local storage
-      email: currentUser.email, // Get the email from Firebase
-    }));
+    console.log(currentUser.uid, role, currentUser.email); // Debugging line
+    console.log("Form Data:", formData); // Debugging line
+
+    const enrichedFormData = {
+      ...formData,
+      firebase_uid: currentUser.uid,
+      role: role,
+      email: currentUser.email,
+    };
 
     setIsSubmitting(true);
     try {
-      const token = await auth.currentUser.getIdToken();
-      const response = await fetch("/api/auth/register", {
+      const response = await fetch(`http://localhost:3000/api/auth/register`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${currentUser.accessToken}`,
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(enrichedFormData),
       });
 
       if (!response.ok) {

@@ -37,7 +37,7 @@ const ManageMembers = () => {
   const fetchApplicants = async (token) => {
     try {
       const res = await fetch(
-        `http://localhost:5000/api/faculty/participants/${topicId}`,
+        `http://localhost:3000/api/faculty/participants/${topicId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -65,7 +65,7 @@ const ManageMembers = () => {
   const fetchTopicVacancies = async (token) => {
     try {
       const res = await fetch(
-        `http://localhost:5000/api/faculty/topics/${topicId}`,
+        `http://localhost:3000/api/faculty/topics/${topicId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -125,7 +125,7 @@ const ManageMembers = () => {
         if (newStatus === "accepted") acceptedCount++;
 
         const response = await fetch(
-          `http://localhost:5000/api/faculty/participants/${topicId}/${userId}`,
+          `http://localhost:3000/api/faculty/participants/${topicId}/${userId}`,
           {
             method: "PUT",
             headers: {
