@@ -271,7 +271,6 @@ const ProfilePage = () => {
   );
 };
 
-// ✅ Field Component
 const Field = ({ label, name, value, onChange, type = "text", error }) => (
   <div className="flex flex-col">
     <label className="mb-1 font-medium text-gray-700">{label}</label>
@@ -286,7 +285,6 @@ const Field = ({ label, name, value, onChange, type = "text", error }) => (
   </div>
 );
 
-// ✅ TextArea Component
 const TextArea = ({ label, name, value, onChange }) => (
   <div className="flex flex-col">
     <label className="mb-1 font-medium text-gray-700">{label}</label>
@@ -300,7 +298,6 @@ const TextArea = ({ label, name, value, onChange }) => (
   </div>
 );
 
-// ✅ Info Display Component
 const Info = ({ label, value }) => (
   <p>
     <strong>{label}:</strong> {value || "Not Provided"}

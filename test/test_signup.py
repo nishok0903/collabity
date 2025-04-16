@@ -33,7 +33,7 @@ class RegistrationFlowTest(unittest.TestCase):
         wait = self.wait
         driver.get(f"{self.base_url}/")
 
-        # Step 1: Check if already logged in — look for sidebar logout button
+        # Step 1: Check if already logged in
         try:
             logout_button = wait.until(EC.presence_of_element_located(
                 (By.XPATH, '//button[text()="Sign out"]')))
@@ -59,7 +59,7 @@ class RegistrationFlowTest(unittest.TestCase):
             By.CSS_SELECTOR, 'input[placeholder="Confirm Password"]').send_keys(password)
         driver.find_element(By.CSS_SELECTOR, 'button[type="submit"]').click()
 
-        # Step 4: Wait for redirect to /enterDetails/...
+        # Step 4: Wait for redirect to enterDetails
         wait.until(EC.url_contains("/enterDetails"))
 
         # Step 5: Fill the enter details form
@@ -77,12 +77,10 @@ class RegistrationFlowTest(unittest.TestCase):
         driver.find_element(By.NAME, "linkedin_link").send_keys(
             f"https://linkedin.com/in/{username}")
 
-        # Fix: Set DOB using JavaScript
         dob_input = driver.find_element(By.NAME, "date_of_birth")
         driver.execute_script(
             "arguments[0].value = arguments[1]", dob_input, dob)
 
-        # Select gender
         gender_select = driver.find_element(By.NAME, "gender")
         gender_select.find_elements(By.TAG_NAME, "option")[
             1].click()  # e.g., male
@@ -103,25 +101,24 @@ class RegistrationFlowTest(unittest.TestCase):
         # Submit form
         driver.find_element(By.CSS_SELECTOR, 'button[type="submit"]').click()
 
-        # Step 6: Handle alert if it appears
         try:
             WebDriverWait(driver, 5).until(EC.alert_is_present())
             alert = driver.switch_to.alert
-            print(f"⚠️ Alert appeared: {alert.text}")
+            print(f" Alert appeared: {alert.text}")
             alert.accept()
-            print("✅ Alert accepted.")
+            print(" Alert accepted.")
         except Exception:
-            print("ℹ️ No alert appeared after submission.")
+            print("ℹ No alert appeared after submission.")
 
-       # Step 7: Verify redirect to login
+       # Verify redirect to login
         try:
             wait.until(EC.url_contains("/login"))
             self.assertIn("/login", driver.current_url)
             print(
-                f"✅ Successfully registered and redirected to login as {email}")
+                f" Successfully registered and redirected to login as {email}")
         except Exception as e:
-            print(f"❌ Registration failed or not redirected to login.\n{e}")
-            print("⚠️ Keeping browser open for manual inspection...")
+            print(f" Registration failed or not redirected to login.\n{e}")
+            print(" Keeping browser open for manual inspection...")
             while True:
                 time.sleep(10)
 

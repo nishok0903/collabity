@@ -12,46 +12,6 @@ class LoginTest(unittest.TestCase):
         cls.driver.get("http://localhost:3000/")
         cls.wait = WebDriverWait(cls.driver, 15)
 
-    # def test_login_failure(self):
-    #     driver = self.driver
-    #     wait = self.wait
-
-    #     # Refresh the page
-    #     driver.get("http://localhost:3000/")
-
-    #     # Fill in invalid email
-    #     email_input = wait.until(EC.presence_of_element_located(
-    #         (By.CSS_SELECTOR, 'input[type="email"][placeholder="Email"]')
-    #     ))
-    #     email_input.clear()
-    #     email_input.send_keys("invalid@example.com")
-
-    #     # Fill in invalid password
-    #     password_input = driver.find_element(
-    #         By.CSS_SELECTOR, 'input[placeholder="Password"]')
-    #     password_input.clear()
-    #     password_input.send_keys("wrongPassword")
-
-    #     # Click login
-    #     submit_button = wait.until(EC.element_to_be_clickable(
-    #         (By.CSS_SELECTOR, 'button[type="submit"]')
-    #     ))
-    #     submit_button.click()
-
-    #     # Handle alert for failed login
-    #     alert = wait.until(EC.alert_is_present())
-    #     self.assertIn("failed to log in", alert.text.lower())
-    #     alert.accept()
-
-    #     # Optional: check error message on the form
-    #     try:
-    #         error_message = wait.until(
-    #             EC.presence_of_element_located((By.CLASS_NAME, "text-red-500"))
-    #         )
-    #         self.assertIn("Failed", error_message.text)
-    #     except:
-    #         pass  # Not all login errors render a message on the form
-
     def test_login_success(self):
         driver = self.driver
         wait = self.wait

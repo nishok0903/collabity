@@ -37,20 +37,19 @@ class ProfilePageTest(unittest.TestCase):
             driver.find_element(
                 By.CSS_SELECTOR, 'button[type="submit"]').click()
 
-            # Handle any unexpected alert that might pop up after login
             try:
                 WebDriverWait(driver, 5).until(EC.alert_is_present())
                 alert = driver.switch_to.alert
                 print("⚠️ Alert appeared:", alert.text)
                 alert.accept()  # Accept the alert to dismiss it
             except:
-                print("✅ No unexpected alert appeared.")
+                print(" No unexpected alert appeared.")
 
             # Wait for dashboard or sidebar to appear
             wait.until(EC.presence_of_element_located(
                 (By.XPATH, "//button[text()='Sign out']")))
 
-            print(f"✅ Logged in as {self.existing_user['email']}")
+            print(f"Logged in as {self.existing_user['email']}")
 
             # Step 3: Navigate to user profile directly
             profile_url = f"{self.base_url}/profile/{self.existing_user['username']}"
@@ -58,8 +57,8 @@ class ProfilePageTest(unittest.TestCase):
             time.sleep(4)
 
         except Exception as e:
-            print(f"\n❌ Error while accessing profile page:\n{e}")
-            print("⚠️ Keeping browser open for manual inspection...")
+            print(f"\n Error while accessing profile page:\n{e}")
+            print(" Keeping browser open for manual inspection...")
             while True:
                 time.sleep(10)  # Wait for user inspection
 
