@@ -16,7 +16,7 @@ const RegisteredTopicsList = () => {
         const firebase_uid = auth.currentUser?.uid;
 
         const response = await fetch(
-          `http://localhost:3000/api/faculty/getRegisteredTopics?uid=${firebase_uid}`,
+          `/api/faculty/getRegisteredTopics?uid=${firebase_uid}`,
           {
             method: "GET",
             headers: {

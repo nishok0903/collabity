@@ -5,19 +5,13 @@ services:
       - server
     networks:
       - app-network
-    # ⛔️ REMOVE this so Nginx handles all port 3000 traffic
-    # ports:
-    #   - "3000:80"
 
   server:
     build: ./server
     depends_on:
       - mysql
-    environment:
-      MYSQL_HOST: mysql
-      MYSQL_USER: root
-      MYSQL_PASSWORD: tiger
-      MYSQL_DATABASE: collabity_v1
+    env_file:
+      - ./server/.env
     ports:
       - "5000:5000"
     networks:

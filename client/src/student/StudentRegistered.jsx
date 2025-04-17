@@ -12,14 +12,11 @@ const StudentRegistered = () => {
     const fetchTopics = async () => {
       try {
         const token = await auth.currentUser.getIdToken();
-        const response = await fetch(
-          `http://localhost:3000/api/student/topics`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
+        const response = await fetch(`/api/student/topics`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
           },
-        );
+        });
 
         if (response.ok) {
           const data = await response.json();

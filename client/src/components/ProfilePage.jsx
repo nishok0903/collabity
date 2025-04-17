@@ -16,7 +16,7 @@ const ProfilePage = () => {
 
   const fetchProfile = async () => {
     try {
-      const res = await fetch(`http://localhost:3000/api/profile/${username}`);
+      const res = await fetch(`/api/profile/${username}`);
       if (!res.ok) throw new Error("Profile fetch failed");
       const data = await res.json();
       setProfile(data);
@@ -69,7 +69,7 @@ const ProfilePage = () => {
 
     try {
       const token = await auth.currentUser.getIdToken();
-      const res = await fetch(`http://localhost:3000/api/profile/${username}`, {
+      const res = await fetch(`/api/profile/${username}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

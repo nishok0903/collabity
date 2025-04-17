@@ -6,7 +6,10 @@ import {
   signOut,
   sendPasswordResetEmail,
   onAuthStateChanged,
+  signInWithPopup,
+  GoogleAuthProvider,
 } from "firebase/auth";
+import { useNavigate } from "react-router-dom";
 
 const AuthContext = createContext(null);
 
@@ -21,6 +24,7 @@ export function useAuth() {
 export function AuthProvider({ children }) {
   const [currentUser, setCurrentUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate(); // useNavigate for page redirection
 
   // ----------------- Auth Functions -----------------
 
@@ -54,7 +58,7 @@ export function AuthProvider({ children }) {
 
       const token = await firebaseUser.getIdToken();
 
-      const response = await fetch(`http://localhost:3000/api/auth/login`, {
+      const response = await fetch(`/api/auth/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -81,6 +85,61 @@ export function AuthProvider({ children }) {
     } catch (error) {
       console.error("Login error:", error.message);
       return null;
+    }
+  };
+
+  const googleLogin = async () => {
+    const provider = new GoogleAuthProvider();
+
+    try {
+      const userCredential = await signInWithPopup(auth, provider);
+      const firebaseUser = userCredential.user;
+
+      // Check if the user's UID exists in the database
+      const token = await firebaseUser.getIdToken();
+      const response = await fetch(
+        `/api/auth/checkRole?firebase_uid=${firebaseUser.uid}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+      const data = await response.json();
+
+      if (response.ok) {
+        // If user exists, log them in
+        setCurrentUser((prev) => ({
+          ...prev,
+          ...firebaseUser,
+          role: data.role,
+          username: data.username,
+          firstName: data.first_name,
+          lastName: data.last_name,
+        }));
+        alert(userCredential.user.displayName + " logged in successfully!");
+        if (data.role === "student") {
+          navigate("/feed");
+        } else if (data.role === "faculty") {
+          navigate("/create-topic");
+        }
+      } else {
+        // If user does not exist, redirect to EnterDetails page
+        console.log(
+          "User not found in database. Redirecting to EnterDetails...",
+        );
+
+        setCurrentUser((prev) => ({
+          ...prev,
+          ...firebaseUser,
+        }));
+
+        navigate("/enterDetails");
+      }
+    } catch (error) {
+      console.error("Google login error:", error.message);
     }
   };
 
@@ -111,7 +170,7 @@ export function AuthProvider({ children }) {
         const token = await user.getIdToken();
 
         const response = await fetch(
-          `http://localhost:3000/api/auth/checkRole?firebase_uid=${user.uid}`,
+          `/api/auth/checkRole?firebase_uid=${user.uid}`,
           {
             method: "GET",
             headers: {
@@ -153,6 +212,7 @@ export function AuthProvider({ children }) {
     login,
     signup,
     logout,
+    googleLogin, // Expose googleLogin to the context
     resetPassword,
     updateEmail,
     updatePassword,

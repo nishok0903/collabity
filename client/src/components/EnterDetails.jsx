@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
 const EnterDetails = () => {
@@ -17,21 +17,20 @@ const EnterDetails = () => {
     rating: 0.0,
     raters: 0,
     approved: false,
-    role: "",
-    tags: [], // Array to hold selected tag IDs
+    role: "student", // Default role value
+    tags: [],
   });
 
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [tagsList, setTagsList] = useState([]); // For storing fetched tags
-  const { currentUser } = useAuth(); // Get auth context
-  const { role } = useParams(); // Get role from URL params
-  const navigate = useNavigate(); // For navigation
+  const [tagsList, setTagsList] = useState([]);
+  const { currentUser } = useAuth();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchTags = async () => {
       try {
-        const response = await fetch(`http://localhost:3000/api/tags`); // Assuming you have an API endpoint for tags
+        const response = await fetch(`/api/tags`);
         const data = await response.json();
         setTagsList(data);
       } catch (err) {
@@ -82,19 +81,15 @@ const EnterDetails = () => {
 
     if (!validateForm()) return;
 
-    console.log(currentUser.uid, role, currentUser.email); // Debugging line
-    console.log("Form Data:", formData); // Debugging line
-
     const enrichedFormData = {
       ...formData,
       firebase_uid: currentUser.uid,
-      role: role,
       email: currentUser.email,
     };
 
     setIsSubmitting(true);
     try {
-      const response = await fetch(`http://localhost:3000/api/auth/register`, {
+      const response = await fetch(`/api/auth/register`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -176,6 +171,35 @@ const EnterDetails = () => {
             />
           </div>
 
+          {/* Role Selection with Radio Buttons */}
+          <div>
+            <label className="text-sm font-medium text-gray-700">Role</label>
+            <div className="mt-2 flex gap-4">
+              <label className="flex items-center space-x-2">
+                <input
+                  type="radio"
+                  name="role"
+                  value="student"
+                  checked={formData.role === "student"}
+                  onChange={handleChange}
+                  className="h-4 w-4 border-gray-300 text-blue-600 focus:ring-blue-500"
+                />
+                <span className="text-sm text-gray-700">Student</span>
+              </label>
+              <label className="flex items-center space-x-2">
+                <input
+                  type="radio"
+                  name="role"
+                  value="faculty"
+                  checked={formData.role === "faculty"}
+                  onChange={handleChange}
+                  className="h-4 w-4 border-gray-300 text-blue-600 focus:ring-blue-500"
+                />
+                <span className="text-sm text-gray-700">Faculty</span>
+              </label>
+            </div>
+          </div>
+
           {/* Phone Number */}
           <div>
             <label className="text-sm font-medium text-gray-700">
@@ -246,7 +270,7 @@ const EnterDetails = () => {
             />
           </div>
 
-          {/* Tags Section */}
+          {/* Tags */}
           <div>
             <label className="text-sm font-medium text-gray-700">Tags</label>
             <div className="mt-2 flex flex-wrap gap-2">
@@ -284,7 +308,7 @@ const EnterDetails = () => {
             </div>
           </div>
 
-          {/* Submit Button */}
+          {/* Submit */}
           <button
             type="submit"
             disabled={isSubmitting}

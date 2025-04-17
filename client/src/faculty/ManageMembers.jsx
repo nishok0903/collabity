@@ -36,14 +36,11 @@ const ManageMembers = () => {
   // Fetch applicants
   const fetchApplicants = async (token) => {
     try {
-      const res = await fetch(
-        `http://localhost:3000/api/faculty/participants/${topicId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+      const res = await fetch(`/api/faculty/participants/${topicId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
         },
-      );
+      });
 
       if (!res.ok) throw new Error("Failed to fetch participants");
 
@@ -64,14 +61,11 @@ const ManageMembers = () => {
   // Fetch topic vacancies
   const fetchTopicVacancies = async (token) => {
     try {
-      const res = await fetch(
-        `http://localhost:3000/api/faculty/topics/${topicId}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+      const res = await fetch(`/api/faculty/topics/${topicId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
         },
-      );
+      });
 
       if (!res.ok) throw new Error("Failed to fetch topic");
 
@@ -125,7 +119,7 @@ const ManageMembers = () => {
         if (newStatus === "accepted") acceptedCount++;
 
         const response = await fetch(
-          `http://localhost:3000/api/faculty/participants/${topicId}/${userId}`,
+          `/api/faculty/participants/${topicId}/${userId}`,
           {
             method: "PUT",
             headers: {

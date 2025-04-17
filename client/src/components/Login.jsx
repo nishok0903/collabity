@@ -13,7 +13,7 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [errors, setErrors] = useState({});
   const [showPassword, setShowPassword] = useState(false);
-  const { login } = useAuth();
+  const { login, googleLogin } = useAuth();
   const navigate = useNavigate();
 
   const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -113,6 +113,20 @@ const Login = () => {
               Login
             </button>
           </form>
+
+          {/* Google Sign-In Button */}
+          <button
+            type="button"
+            onClick={googleLogin}
+            className="mt-6 flex w-full items-center justify-center rounded-lg border border-gray-300 bg-white py-2 text-gray-800 transition hover:bg-gray-100 focus:outline-none focus:ring-4 focus:ring-blue-300"
+          >
+            <img
+              src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/120px-Google_%22G%22_logo.svg.png?20230822192911"
+              alt="Google logo"
+              className="mr-4 h-6 w-6"
+            />
+            <span className="font-semibold">Sign in with Google</span>
+          </button>
 
           {/* Sign-Up Link */}
           <div className="mt-4 text-center">

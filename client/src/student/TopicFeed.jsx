@@ -17,7 +17,7 @@ const TopicFeed = () => {
           return;
         }
         const res = await fetch(
-          `http://localhost:3000/api/student/getFeed?firebase_uid=${firebase_uid}`,
+          `/api/student/getFeed?firebase_uid=${firebase_uid}`,
           {
             method: "GET",
             headers: {

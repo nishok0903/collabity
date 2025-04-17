@@ -243,6 +243,11 @@ app.put("/api/profile/:username", verifyToken, async (req, res) => {
 // Error handling middleware
 app.use(errorHandler);
 
+require("./cron");
+
+const recoverMissedReports = require("./services/recoverMissedReports");
+recoverMissedReports();
+
 app.options("*", cors()); // handles preflight requests
 
 module.exports = app;

@@ -22,7 +22,7 @@ const TopicInfo = () => {
       try {
         const token = await auth.currentUser?.getIdToken(); // your bearer token
         const response = await fetch(
-          `http://localhost:3000/api/student/getTopicDetails?topic_id=${topicId}`,
+          `/api/student/getTopicDetails?topic_id=${topicId}`,
           {
             method: "GET",
             headers: {
@@ -54,7 +54,7 @@ const TopicInfo = () => {
 
       // Make the request to the server with the Bearer token
       const response = await fetch(
-        `http://localhost:3000/api/student/downloadDocument/${topic.topic_id}`,
+        `/api/student/downloadDocument/${topic.topic_id}`,
         {
           method: "GET",
           headers: {
@@ -92,20 +92,17 @@ const TopicInfo = () => {
     try {
       const token = await auth.currentUser.getIdToken(); // Get the Firebase token
       const firebase_uid = auth.currentUser.uid; // Get the firebase_uid (user's UID in Firebase)
-      const response = await fetch(
-        `http://localhost:3000/api/student/applyForTopic`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`, // Include the token in the headers
-          },
-          body: JSON.stringify({
-            topic_id: topic.topic_id, // The topic that the student is applying to
-            firebase_uid: firebase_uid, // Send the firebase_uid to identify the user
-          }),
+      const response = await fetch(`/api/student/applyForTopic`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`, // Include the token in the headers
         },
-      );
+        body: JSON.stringify({
+          topic_id: topic.topic_id, // The topic that the student is applying to
+          firebase_uid: firebase_uid, // Send the firebase_uid to identify the user
+        }),
+      });
 
       if (!response.ok) {
         throw new Error("Failed to apply for the topic");

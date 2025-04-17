@@ -438,9 +438,10 @@ router.get("/dashboard/:firebase_uid", async (req, res) => {
     const conn = await db.getConnection();
 
     const [facultyUser] = await conn.execute(
-      `SELECT u.id, u.first_name, u.last_name, u.email, u.rating
-       FROM users u 
-       WHERE u.firebase_uid = ? AND u.role = 'faculty'`,
+      `SELECT u.id, u.first_name, u.last_name, u.email, u.rating, f.department, f.designation
+       FROM users u, faculty_details f
+       WHERE u.id = f.user_id AND u.is_deleted = 0 AND f.is_deleted = 0
+       AND u.firebase_uid = ? AND u.role = 'faculty'`,
       [firebase_uid]
     );
 

@@ -11,7 +11,7 @@ const HomeRedirect = () => {
 
       if (user) {
         // User is logged in, check role
-        fetch(`http://localhost:3000/api/checkRole`, {
+        fetch(`/api/checkRole`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

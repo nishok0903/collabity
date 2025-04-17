@@ -19,7 +19,7 @@ function App() {
         {/* Public Routes */}
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<SignUp />} />
-        <Route path="/enterDetails/:role" element={<EnterDetails />} />
+        <Route path="/enterDetails" element={<EnterDetails />} />
         <Route path="*" element={<Layout />}></Route>
       </Routes>
     </AuthProvider>
